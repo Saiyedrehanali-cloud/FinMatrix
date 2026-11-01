@@ -17,13 +17,20 @@ import {
   X,
   Shield,
   IndianRupee,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface NavItem {
+  label: string;
+  href: string;
+  icon: any;
+  badge?: string | null;
+  badgeColor?: string;
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
@@ -41,7 +48,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       .catch(() => {});
   }, []);
 
-  const navItems = [
+  const navItems: NavItem[] = [
     {
       label: "Dashboard",
       href: "/admin",
@@ -95,13 +102,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/admin/settings",
       icon: Settings,
       badge: null,
-    },
-    {
-      label: "Documentation",
-      href: "/pitch",
-      icon: Sparkles,
-      badge: "Architecture",
-      badgeColor: "bg-[#00959C] text-white",
     },
   ];
 
