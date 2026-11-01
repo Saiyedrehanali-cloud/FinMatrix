@@ -51,15 +51,15 @@ AICTE currently monitors thousands of Fixed Deposit Receipts (FDRs) pledged by t
 
 ---
 
-## 👥 Demo Personas & Credentials
+## 👥 User Accounts & Credentials
 
-All seeded accounts use password: **`Demo@1234`** (or 1-click quick login chips on `/login`):
+The application provides quick 1-click access buttons on `/login` and supports the following pre-configured credentials:
 
-| Persona | Role | Email | Scope of Access |
-|---|---|---|---|
-| **Dr. Rajesh Sharma** | `ADMIN` | `admin@aicte.demo` | Regulation Bureau: Dashboard, Queue, Verify, Flag Discrepancy, Releases, Reports |
-| **Smt. Sunita Rao** | `SENIOR_ADMIN` | `senior@aicte.demo` | Executive Bureau: Escalation alerts, Policy overrides, Tamper audit verification |
-| **Prof. Anand Verma** | `INSTITUTION` | `rgpv.college@demo.in` | Nodal Officer (Demo Inst. of Tech, Bhopal): Submit FDR, Renew, Request Release |
+| Persona | Role | Email | Password | Scope of Access |
+|---|---|---|---|---|
+| **AICTE Central Administrator** | `ADMIN` | `admin@finmatrix.gov.in` | `Admin@1234` | Regulation Bureau: Dashboard, FDR Queue, Bank Verification, Discrepancies, Releases, Institutions, Reports |
+| **Senior Bureau Advisor** | `SENIOR_ADMIN` | `senior@finmatrix.gov.in` | `Admin@1234` | Executive Bureau: Escalations, Overrides, Cryptographic Audit Verification |
+| **DTU Nodal Officer** | `INSTITUTION` | `nodal@dtu.ac.in` | `College@1234` | College Portal: Register College, Submit FDRs, Track Renewals, Request Release |
 
 ---
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Landmark,
   CalendarClock,
@@ -80,7 +81,26 @@ interface PriorityFdr {
   purpose: string;
 }
 
+function CustomBarTooltip({ active, payload, label }: any) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-3 rounded-xl shadow-lg border border-slate-200 text-xs space-y-1">
+        <p className="font-bold text-[#006675] text-sm">{label}</p>
+        <p className="text-[#0F2A30]">
+          <span className="font-semibold">Maturities:</span> {data.count} FDR instruments
+        </p>
+        <p className="text-[#00959C] font-semibold">
+          <span>Total Value:</span> {formatINR(data.amount, true)}
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [viewState, setViewState] = useState<"ready" | "loading" | "empty" | "error">("ready");
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [chartData, setChartData] = useState<ChartData | null>(null);
@@ -140,24 +160,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Custom Recharts Tooltip
-  const CustomBarTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white p-3 rounded-xl shadow-lg border border-slate-200 text-xs space-y-1">
-          <p className="font-bold text-[#006675] text-sm">{label}</p>
-          <p className="text-[#0F2A30]">
-            <span className="font-semibold">Maturities:</span> {data.count} FDR instruments
-          </p>
-          <p className="text-[#00959C] font-semibold">
-            <span>Total Value:</span> {formatINR(data.amount, true)}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+
 
   return (
     <div className="space-y-6">
@@ -175,7 +178,7 @@ export default function AdminDashboardPage() {
               Security Deposit & FDR Oversight
             </h1>
             <p className="text-xs sm:text-sm text-[#5B7480] mt-0.5">
-              Live database surveillance across {summary?.institutionCount || 40} approved technical institutions nationwide.
+              Live database surveillance across {summary?.institutionCount ?? 0} approved technical institutions nationwide.
             </p>
           </div>
 
@@ -192,74 +195,22 @@ export default function AdminDashboardPage() {
               <span>{isScanning ? "Scanning DB Engine..." : "Run Expiry Scan"}</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => alert("Report generation simulated. In Phase 5, this downloads full CSV compliance audits.")}
+            <Link
+              href="/admin/reports"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-[#00959C] text-[#006675] bg-white hover:bg-[#E0F5F5] shadow-xs transition-colors focus:outline-hidden"
             >
               <Download className="w-3.5 h-3.5 text-[#00959C]" />
-              <span>Export CSV</span>
-            </button>
+              <span>Export Reports</span>
+            </Link>
 
             <Link
               href="/admin/verification"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#EB5A11] text-white hover:bg-[#D44E0C] shadow-xs transition-all focus:ring-2 focus:ring-[#FF9D2D] focus:outline-hidden"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Verify Queue ({summary?.pendingVerification || 9})</span>
+              <span>Verify Queue ({summary?.pendingVerification ?? 0})</span>
             </Link>
           </div>
-        </div>
-      </div>
-
-      {/* Interactive UI State Selector for testing Hackathon states */}
-      <div className="flex items-center justify-between p-2.5 px-3.5 rounded-xl bg-white border border-slate-200 text-xs shadow-2xs">
-        <div className="flex items-center gap-2 text-[#5B7480]">
-          <Info className="w-4 h-4 text-[#00959C]" />
-          <span className="font-semibold text-[#0F2A30]">Demo State Inspector:</span>
-          <span className="hidden sm:inline">Inspect UI resilience across error, loading, and empty states:</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setViewState("ready")}
-            className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${
-              viewState === "ready"
-                ? "bg-[#006675] text-white shadow-xs"
-                : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Live DB
-          </button>
-          <button
-            onClick={() => setViewState("loading")}
-            className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${
-              viewState === "loading"
-                ? "bg-[#006675] text-white shadow-xs"
-                : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Loading Skeleton
-          </button>
-          <button
-            onClick={() => setViewState("empty")}
-            className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${
-              viewState === "empty"
-                ? "bg-[#006675] text-white shadow-xs"
-                : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Empty
-          </button>
-          <button
-            onClick={() => setViewState("error")}
-            className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${
-              viewState === "error"
-                ? "bg-[#EB5A11] text-white shadow-xs"
-                : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Error
-          </button>
         </div>
       </div>
 
@@ -331,42 +282,42 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             <KpiCard
               label="Total FDRs"
-              value={summary?.totalFdrs || 90}
-              subtext={`Across ${summary?.institutionCount || 40} institutions`}
+              value={summary?.totalFdrs ?? 0}
+              subtext={`Across ${summary?.institutionCount ?? 0} institutions`}
               subtextChip="Nationwide"
               icon={Landmark}
               accent="dark-teal"
-              onClick={() => alert("Navigating to All FDRs list")}
+              onClick={() => router.push("/admin/fdrs")}
             />
 
             <KpiCard
               label="Expiring Soon (≤90d)"
-              value={summary?.expiringSoon || 16}
+              value={summary?.expiringSoon ?? 0}
               subtext="Requires renewal notice"
-              subtextChip={`${summary?.expiring30 || 6} within 30 days`}
+              subtextChip={`${summary?.expiring30 ?? 0} within 30 days`}
               icon={CalendarClock}
               accent="burnt-orange"
-              onClick={() => alert("Filtering FDRs with maturity <= 90 days")}
+              onClick={() => router.push("/admin/alerts")}
             />
 
             <KpiCard
               label="Pending Verification"
-              value={summary?.pendingVerification || 12}
+              value={summary?.pendingVerification ?? 0}
               subtext="Awaiting nodal scrutiny"
-              subtextChip={`Oldest: ${summary?.oldestPendingDays || 4} days`}
+              subtextChip={`Oldest: ${summary?.oldestPendingDays ?? 0} days`}
               icon={Hourglass}
               accent="yellow-orange"
-              onClick={() => alert("Opening Verification Queue")}
+              onClick={() => router.push("/admin/verification")}
             />
 
             <KpiCard
               label="Total Amount"
-              value={formatINR(summary?.totalAmount || 225000000, true)}
+              value={formatINR(summary?.totalAmount ?? 0, true)}
               subtext="Total security coverage"
-              subtextChip={formatINR(summary?.totalAmount || 225000000)}
+              subtextChip={formatINR(summary?.totalAmount ?? 0)}
               icon={IndianRupee}
               accent="teal"
-              onClick={() => alert("Opening Financial Analytics")}
+              onClick={() => router.push("/admin/fdrs")}
             />
           </div>
 
@@ -456,7 +407,7 @@ export default function AdminDashboardPage() {
                     Portfolio Status Distribution
                   </h3>
                   <p className="text-xs text-[#5B7480]">
-                    Current breakdown of all {summary?.totalFdrs || 90} instruments
+                    Current breakdown of all {summary?.totalFdrs ?? 0} instruments
                   </p>
                 </div>
               </div>
@@ -546,7 +497,16 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {priorityFdrs.map((item) => {
+                  {priorityFdrs.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-slate-400">
+                        <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
+                        <p className="font-semibold text-slate-700">No Priority Items Pending</p>
+                        <p className="text-xs text-slate-400 mt-0.5">All registered deposits are verified and compliant.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    priorityFdrs.map((item) => {
                     const maturityPill = getMaturitySeverity(item.daysLeft);
 
                     return (
@@ -621,7 +581,8 @@ export default function AdminDashboardPage() {
                         </td>
                       </tr>
                     );
-                  })}
+                  })
+                )}
                 </tbody>
               </table>
             </div>

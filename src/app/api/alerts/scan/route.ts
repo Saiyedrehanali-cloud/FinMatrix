@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays } from "@/lib/date-utils";
 import { logAudit } from "@/lib/audit";
 import { getSession } from "@/lib/auth";
 

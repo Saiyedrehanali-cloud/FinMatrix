@@ -73,38 +73,7 @@ export default function AdminAuditPage() {
     }
   };
 
-  // Live Jury Demo Tamper Handler
-  const [tamperMsg, setTamperMsg] = useState<string | null>(null);
-  const [isTampering, setIsTampering] = useState(false);
 
-  const handleTamperSimulation = async (action: "TAMPER" | "RESTORE") => {
-    setIsTampering(true);
-    setTamperMsg(null);
-    try {
-      const res = await fetch("/api/audit/tamper", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
-      });
-      const json = await res.json();
-      if (json.ok) {
-        setTamperMsg(json.message);
-        loadLogs();
-        // Automatically re-verify to show result immediately
-        const verifyRes = await fetch("/api/audit/verify");
-        const verifyJson = await verifyRes.json();
-        if (verifyJson.ok) {
-          setVerifyResult(verifyJson.data);
-        }
-      } else {
-        alert(json.error || "Action failed");
-      }
-    } catch (e) {
-      alert("Tamper demo execution failed");
-    } finally {
-      setIsTampering(false);
-    }
-  };
 
   const filteredLogs = logs.filter((log) => {
     if (!searchQuery.trim()) return true;
@@ -145,48 +114,7 @@ export default function AdminAuditPage() {
         </button>
       </div>
 
-      {/* JURY DEMONSTRATION WIDGET (Doc 07 §2 T13 spec) */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border border-slate-700 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FF9D2D] text-[#0F2A30]">
-              Jury Live Demonstration
-            </span>
-            <span className="text-xs font-bold text-teal-300">
-              Scenario T13: Zero-Trust Tamper Detection Test
-            </span>
-          </div>
-          <p className="text-xs text-slate-300 max-w-2xl">
-            Simulate a rogue database administrator executing a direct SQL injection override on an audit record to bypass verification. Watch our HMAC-SHA256 integrity verifier catch the anomaly in real time.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => handleTamperSimulation("TAMPER")}
-            disabled={isTampering}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#EB5A11] text-white hover:bg-[#D44E0C] shadow-sm disabled:opacity-50 transition-colors"
-          >
-            {isTampering ? "Simulating..." : "Simulate DB Tampering"}
-          </button>
-          <button
-            onClick={() => handleTamperSimulation("RESTORE")}
-            disabled={isTampering}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#00959C] text-white hover:bg-[#007F85] shadow-sm disabled:opacity-50 transition-colors"
-          >
-            Restore Chain
-          </button>
-        </div>
-      </div>
-
-      {tamperMsg && (
-        <div className="p-3 bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 flex items-center justify-between">
-          <span>{tamperMsg}</span>
-          <button onClick={() => setTamperMsg(null)} className="text-slate-500 hover:text-slate-800">
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Verification Result Banner */}
       {verifyResult && (

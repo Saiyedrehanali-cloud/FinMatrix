@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { addDays, differenceInCalendarDays } from "date-fns";
+import { addDays, differenceInCalendarDays } from "@/lib/date-utils";
 import { computeLifecycle } from "@/lib/services/fdr";
 
 export const dynamic = "force-dynamic";

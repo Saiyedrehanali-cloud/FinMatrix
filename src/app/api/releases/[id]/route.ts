@@ -3,6 +3,13 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 
+export async function POST(
+  req: NextRequest,
+  ctx: { params: { id: string } }
+) {
+  return PATCH(req, ctx);
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -67,8 +74,23 @@ export async function PATCH(
         },
       });
 
-      await db.alert.create({
-        data: {
+      await db.alert.upsert({
+        where: {
+          fdrId_type_threshold_audience: {
+            fdrId: releaseReq.fdrId,
+            type: "RELEASE_UPDATE",
+            threshold: 0,
+            audience: "INSTITUTION",
+          },
+        },
+        update: {
+          severity: "INFO",
+          title: `Release Approved: FDR ${releaseReq.fdr.refNo}`,
+          message: `Your release application has been APPROVED by the AICTE Competent Authority. Final remittance / refund voucher is being scheduled.`,
+          isRead: false,
+          createdAt: now,
+        },
+        create: {
           fdrId: releaseReq.fdrId,
           institutionId: releaseReq.fdr.institutionId,
           type: "RELEASE_UPDATE",
@@ -123,8 +145,23 @@ export async function PATCH(
         data: { releaseRequested: false },
       });
 
-      await db.alert.create({
-        data: {
+      await db.alert.upsert({
+        where: {
+          fdrId_type_threshold_audience: {
+            fdrId: releaseReq.fdrId,
+            type: "RELEASE_UPDATE",
+            threshold: 0,
+            audience: "INSTITUTION",
+          },
+        },
+        update: {
+          severity: "HIGH",
+          title: `Release Request Rejected: FDR ${releaseReq.fdr.refNo}`,
+          message: `Reason: ${remarks.trim()}. Please address deficiencies and contact regional office.`,
+          isRead: false,
+          createdAt: now,
+        },
+        create: {
           fdrId: releaseReq.fdrId,
           institutionId: releaseReq.fdr.institutionId,
           type: "RELEASE_UPDATE",
@@ -177,8 +214,23 @@ export async function PATCH(
         },
       });
 
-      await db.alert.create({
-        data: {
+      await db.alert.upsert({
+        where: {
+          fdrId_type_threshold_audience: {
+            fdrId: releaseReq.fdrId,
+            type: "RELEASE_UPDATE",
+            threshold: 0,
+            audience: "INSTITUTION",
+          },
+        },
+        update: {
+          severity: "INFO",
+          title: `Deposit Released: Ref ${releaseRef}`,
+          message: `Fixed Deposit ${releaseReq.fdr.refNo} (₹${(releaseReq.fdr.amount / 100000).toFixed(2)} Lakhs) has been officially released. AICTE endorsement has been discharged.`,
+          isRead: false,
+          createdAt: now,
+        },
+        create: {
           fdrId: releaseReq.fdrId,
           institutionId: releaseReq.fdr.institutionId,
           type: "RELEASE_UPDATE",

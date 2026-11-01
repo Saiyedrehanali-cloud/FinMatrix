@@ -1,4 +1,4 @@
-import { differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays } from "@/lib/date-utils";
 
 export type LifecycleStatus =
   | "ACTIVE"

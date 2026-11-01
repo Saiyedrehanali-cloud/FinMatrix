@@ -20,6 +20,9 @@ import {
   Flame,
   ArrowRight,
   User,
+  Plus,
+  X,
+  Lock,
 } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 
@@ -36,6 +39,61 @@ export default function AdminInstitutionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState("ALL");
   const [regionFilter, setRegionFilter] = useState("ALL");
+
+  // Registration Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    aicteId: "",
+    region: "Northern",
+    type: "Engineering",
+    state: "Delhi",
+    city: "New Delhi",
+    nodalOfficer: "",
+    email: "",
+    phone: "+91 98765 43210",
+    requiredDeposit: 2500000,
+    password: "College@1234",
+  });
+
+  const handleCreateInstitution = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setFormError(null);
+    try {
+      const res = await fetch("/api/institutions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setIsModalOpen(false);
+        setFormData({
+          name: "",
+          aicteId: "",
+          region: "Northern",
+          type: "Engineering",
+          state: "Delhi",
+          city: "New Delhi",
+          nodalOfficer: "",
+          email: "",
+          phone: "+91 98765 43210",
+          requiredDeposit: 2500000,
+          password: "College@1234",
+        });
+        loadInstitutions();
+      } else {
+        setFormError(json.error || "Failed to register institution.");
+      }
+    } catch (err: any) {
+      setFormError("Network error while submitting.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const loadInstitutions = async () => {
     try {
@@ -101,17 +159,27 @@ export default function AdminInstitutionsPage() {
             Affiliated Technical Institutions
           </h1>
           <p className="text-xs sm:text-sm text-[#5B7480] mt-1">
-            Institutional deposit compliance health, shortfall surveillance, and automated risk scoring across 40 nationwide technical institutes.
+            Institutional deposit compliance health, shortfall surveillance, and automated risk scoring across registered technical institutes.
           </p>
         </div>
 
-        <button
-          onClick={loadInstitutions}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto"
-        >
-          <RefreshCw className="w-3.5 h-3.5 text-[#00959C]" />
-          <span>Refresh Directory</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#EB5A11] text-white hover:bg-[#D44E0C] transition-all shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Register Institution</span>
+          </button>
+
+          <button
+            onClick={loadInstitutions}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-[#00959C]" />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* 4 Summary Cards */}
@@ -366,6 +434,227 @@ export default function AdminInstitutionsPage() {
           })
         )}
       </div>
+
+      {/* Register Institution Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-[#006675]" />
+                <h3 className="text-base font-bold text-[#006675]">
+                  Register Technical Institution
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {formError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateInstitution} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-slate-700 font-semibold mb-1">
+                  Institution Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g. Indian Institute of Technology, Delhi"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    AICTE Permanent ID *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.aicteId}
+                    onChange={(e) => setFormData({ ...formData, aicteId: e.target.value })}
+                    placeholder="e.g. 1-9876543210"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C] font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    Institution Type
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                  >
+                    <option value="Engineering">Engineering & Technology</option>
+                    <option value="Management">Management (MBA/PGDM)</option>
+                    <option value="Pharmacy">Pharmacy</option>
+                    <option value="Architecture">Architecture & Planning</option>
+                    <option value="MCA">Computer Applications (MCA)</option>
+                    <option value="Polytechnic">Polytechnic / Diploma</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    Region
+                  </label>
+                  <select
+                    value={formData.region}
+                    onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                  >
+                    <option value="Northern">Northern</option>
+                    <option value="Southern">Southern</option>
+                    <option value="Western">Western</option>
+                    <option value="Eastern">Eastern</option>
+                    <option value="Central">Central</option>
+                    <option value="North-Western">North-Western</option>
+                    <option value="South-Western">South-Western</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    placeholder="e.g. Maharashtra"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="e.g. Mumbai"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                <span className="font-bold text-[#006675] block">
+                  Nodal Officer Login Credentials (Auto-Provisioned)
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">
+                      Nodal Officer Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.nodalOfficer}
+                      onChange={(e) => setFormData({ ...formData, nodalOfficer: e.target.value })}
+                      placeholder="e.g. Dr. Rajesh K."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">
+                      Official Email (Login ID) *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="e.g. nodal@institution.edu.in"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">
+                      Contact Phone
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">
+                      Initial Password
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C] font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-semibold mb-1">
+                  Statutory Required Deposit (INR)
+                </label>
+                <input
+                  type="number"
+                  step="50000"
+                  required
+                  value={formData.requiredDeposit}
+                  onChange={(e) => setFormData({ ...formData, requiredDeposit: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#00959C] font-mono"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 rounded-xl bg-[#006675] text-white hover:bg-[#005562] font-bold shadow-xs disabled:opacity-50"
+                >
+                  {isSubmitting ? "Registering..." : "Create Institution"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

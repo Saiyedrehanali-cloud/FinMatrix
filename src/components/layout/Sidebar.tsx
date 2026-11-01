@@ -28,6 +28,18 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.ok && json.data) {
+          setCurrentUser(json.data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const navItems = [
     {
@@ -52,22 +64,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       label: "Verification",
       href: "/admin/verification",
       icon: ShieldCheck,
-      badge: "9",
-      badgeColor: "bg-[#FF9D2D] text-[#0F2A30]",
+      badge: null,
     },
     {
       label: "Release Requests",
       href: "/admin/releases",
       icon: Undo2,
-      badge: "3",
-      badgeColor: "bg-[#4DC2C2] text-[#006675]",
+      badge: null,
     },
     {
       label: "Alerts",
       href: "/admin/alerts",
       icon: BellRing,
-      badge: "5",
-      badgeColor: "bg-[#EB5A11] text-white",
+      badge: null,
     },
     {
       label: "Reports",
@@ -88,11 +97,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       badge: null,
     },
     {
-      label: "Pitch Deck",
+      label: "Documentation",
       href: "/pitch",
       icon: Sparkles,
-      badge: "SIH '26",
-      badgeColor: "bg-[#FF9D2D] text-[#0F2A30]",
+      badge: "Architecture",
+      badgeColor: "bg-[#00959C] text-white",
     },
   ];
 
@@ -233,14 +242,23 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#00959C] text-white font-bold text-xs border border-white/30 shadow-xs">
-                AD
+                {currentUser?.name
+                  ? currentUser.name
+                      .split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
+                      .substring(0, 2)
+                      .toUpperCase()
+                  : "AD"}
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-xs font-bold text-white leading-tight">
-                  Dr. Rajesh Sharma
+                  {currentUser?.name || "AICTE Administrator"}
                 </span>
                 <span className="text-[11px] text-white/70 leading-tight">
-                  AICTE Admin Officer
+                  {currentUser?.role === "SENIOR_ADMIN"
+                    ? "Senior Bureau Advisor"
+                    : "Central Admin Officer"}
                 </span>
               </div>
             </div>
@@ -249,9 +267,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               type="button"
               title="Logout session"
               className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors focus:outline-hidden"
-              onClick={() => {
-                // To be wired with auth in next phase
-                window.location.href = "/admin";
+              onClick={async () => {
+                try {
+                  await fetch("/api/auth/logout", { method: "POST" });
+                } catch (e) {}
+                window.location.href = "/login";
               }}
             >
               <LogOut className="w-4 h-4" />

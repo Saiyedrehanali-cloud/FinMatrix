@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays } from "@/lib/date-utils";
 
 export const dynamic = "force-dynamic";
 

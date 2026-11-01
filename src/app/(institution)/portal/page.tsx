@@ -69,14 +69,14 @@ export default function InstitutionPortalPage() {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-bold font-display text-[#006675]">
-                {institution?.name || "Demo Institute of Technology, Bhopal"}
+                {institution?.name || "Affiliated Technical Institution"}
               </h1>
               <span className="px-2.5 py-0.5 rounded-full bg-[#E0F5F5] text-[#006675] text-xs font-bold border border-[#00959C]/20">
-                AICTE ID: {institution?.aicteId || "1-4829100"}
+                AICTE ID: {institution?.aicteId || "PENDING"}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#5B7480] mt-1">
-              {institution?.city}, {institution?.state} · Region: {institution?.region} · Type: {institution?.type}
+              {institution?.city ? `${institution.city}, ${institution.state}` : "Registered Campus"} · Region: {institution?.region || "Central"} · Type: {institution?.type || "Technical Institute"}
             </p>
           </div>
         </div>

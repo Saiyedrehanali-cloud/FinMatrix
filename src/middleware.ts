@@ -13,6 +13,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/pitch") ||
     pathname.startsWith("/api/auth/login") ||
+    pathname.startsWith("/api/auth/register") ||
     pathname.startsWith("/api/dashboard") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico") ||
@@ -51,9 +52,9 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/portal", req.url));
     }
 
-    if (pathname.startsWith("/portal") && role !== "INSTITUTION") {
-      // Admin user trying to access institution portal
-      return NextResponse.redirect(new URL("/admin", req.url));
+    if (pathname.startsWith("/portal") && role !== "INSTITUTION" && role !== "ADMIN" && role !== "SENIOR_ADMIN") {
+      // Unrecognized role trying to access institution portal
+      return NextResponse.redirect(new URL("/login", req.url));
     }
 
     return NextResponse.next();

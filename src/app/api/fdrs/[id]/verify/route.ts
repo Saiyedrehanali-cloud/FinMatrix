@@ -57,11 +57,25 @@ export async function POST(
     });
 
     // Create Alert for the institution
-    await db.alert.create({
-      data: {
+    await db.alert.upsert({
+      where: {
+        fdrId_type_threshold_audience: {
+          fdrId,
+          type: "VERIFICATION_UPDATE",
+          threshold: 0,
+          audience: "INSTITUTION",
+        },
+      },
+      update: {
+        severity: "INFO",
+        title: `FDR ${fdr.refNo} Verified by AICTE`,
+        message: `Your deposit instrument of ₹${(fdr.amount / 100000).toFixed(2)} Lakhs has been verified by the AICTE Scrutiny Committee.`,
+        isRead: false,
+      },
+      create: {
         fdrId,
         institutionId: fdr.institutionId,
-        type: "RELEASE_UPDATE",
+        type: "VERIFICATION_UPDATE",
         threshold: 0,
         severity: "INFO",
         audience: "INSTITUTION",

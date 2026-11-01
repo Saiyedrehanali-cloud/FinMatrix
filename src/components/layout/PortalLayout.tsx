@@ -22,6 +22,18 @@ import { cn } from "@/lib/utils";
 export function PortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  React.useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.ok && json.data) {
+          setCurrentUser(json.data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const navItems = [
     { label: "Dashboard", href: "/portal", icon: LayoutDashboard },
@@ -104,12 +116,23 @@ export function PortalLayout({ children }: { children: React.ReactNode }) {
 
           {/* Right Header: College Profile & Switch Role */}
           <div className="flex items-center gap-3">
+            {currentUser && (
+              <div className="hidden md:flex flex-col text-right">
+                <span className="text-xs font-bold text-[#0F2A30] leading-none">
+                  {currentUser.name}
+                </span>
+                <span className="text-[10px] text-[#5B7480] mt-0.5 truncate max-w-[180px]">
+                  {currentUser.institutionName || "Affiliated Institution"}
+                </span>
+              </div>
+            )}
+
             <Link
               href="/admin"
               className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#006675] bg-[#E0F5F5] hover:bg-[#00959C] hover:text-white rounded-lg transition-colors border border-[#00959C]/20"
-              title="Switch to AICTE Admin view for SIH Hackathon Demo"
+              title="Switch to AICTE Admin view"
             >
-              <span>Admin View</span>
+              <span>Admin Portal</span>
               <ExternalLink className="w-3 h-3" />
             </Link>
 

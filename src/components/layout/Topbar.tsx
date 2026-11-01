@@ -27,7 +27,18 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
   const [liveNotifications, setLiveNotifications] = useState<any[]>([]);
   const [liveUnreadCount, setLiveUnreadCount] = useState<number>(0);
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
   React.useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.ok && json.data) {
+          setCurrentUser(json.data.user);
+        }
+      })
+      .catch(() => {});
+
     fetch("/api/alerts")
       .then((res) => res.json())
       .then((json) => {
@@ -39,34 +50,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
       .catch(() => {});
   }, []);
 
-  const sampleNotifications = [
-    {
-      id: "1",
-      title: "Expiring FDR (Critical)",
-      fdrNo: "FDR-PNB-2021-9921",
-      institution: "Delhi Engineering College",
-      time: "25 min ago",
-      severity: "CRITICAL",
-    },
-    {
-      id: "2",
-      title: "New FDR Submission Pending",
-      fdrNo: "FDR-SBI-2024-1049",
-      institution: "National Institute of Tech, Jaipur",
-      time: "1 hour ago",
-      severity: "WARNING",
-    },
-    {
-      id: "3",
-      title: "Discrepancy Reported by Bank API",
-      fdrNo: "FDR-HDFC-2023-4412",
-      institution: "Bhopal Institute of Management",
-      time: "3 hours ago",
-      severity: "CRITICAL",
-    },
-  ];
-
-  const displayList = liveNotifications.length > 0 ? liveNotifications : sampleNotifications;
+  const displayList = liveNotifications;
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-6 bg-white border-b border-slate-200 select-none">
@@ -149,38 +133,46 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
               </div>
 
               <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
-                {displayList.map((notif: any) => (
-                  <Link
-                    key={notif.id}
-                    href="/admin/alerts"
-                    onClick={() => setNotificationsOpen(false)}
-                    className="block px-4 py-3 hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <span
-                        className={cn(
-                          "w-2 h-2 mt-1.5 rounded-full shrink-0",
-                          notif.severity === "CRITICAL"
-                            ? "bg-[#EB5A11]"
-                            : notif.severity === "HIGH"
-                            ? "bg-[#F87C2B]"
-                            : "bg-[#FF9D2D]"
-                        )}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-[#0F2A30]">
-                          {notif.title}
-                        </p>
-                        <p className="text-[11px] text-[#5B7480] truncate">
-                          {notif.fdr ? notif.fdr.refNo : notif.fdrNo || "AICTE Compliance"} {notif.message ? `· ${notif.message}` : ""}
-                        </p>
-                        <span className="text-[10px] text-slate-400 mt-0.5 inline-block">
-                          {notif.time || (notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : "Just now")}
-                        </span>
+                {displayList.length === 0 ? (
+                  <div className="py-6 px-4 text-center text-xs text-slate-400">
+                    <Shield className="w-6 h-6 text-emerald-500 mx-auto mb-1.5 opacity-80" />
+                    <p className="font-semibold text-slate-600">All Systems Normal</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">No unread security alerts or overdue FDR notices.</p>
+                  </div>
+                ) : (
+                  displayList.map((notif: any) => (
+                    <Link
+                      key={notif.id}
+                      href="/admin/alerts"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="block px-4 py-3 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span
+                          className={cn(
+                            "w-2 h-2 mt-1.5 rounded-full shrink-0",
+                            notif.severity === "CRITICAL"
+                              ? "bg-[#EB5A11]"
+                              : notif.severity === "HIGH"
+                              ? "bg-[#F87C2B]"
+                              : "bg-[#FF9D2D]"
+                          )}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-[#0F2A30]">
+                            {notif.title}
+                          </p>
+                          <p className="text-[11px] text-[#5B7480] truncate">
+                            {notif.fdr ? notif.fdr.refNo : notif.fdrNo || "AICTE Compliance"} {notif.message ? `· ${notif.message}` : ""}
+                          </p>
+                          <span className="text-[10px] text-slate-400 mt-0.5 inline-block">
+                            {notif.time || (notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : "Just now")}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))
+                )}
               </div>
 
               <div className="px-4 pt-2 border-t border-slate-100 text-center">
@@ -203,14 +195,23 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
             className="flex items-center gap-2 p-1 pl-1.5 rounded-xl hover:bg-slate-100 transition-colors focus:outline-hidden"
           >
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#006675] text-white font-bold text-xs shadow-xs ring-2 ring-[#006675]/20">
-              RS
+              {currentUser?.name
+                ? currentUser.name
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .substring(0, 2)
+                    .toUpperCase()
+                : "AD"}
             </div>
             <div className="hidden md:flex flex-col text-left">
               <span className="text-xs font-bold text-[#0F2A30] leading-none">
-                Dr. R. Sharma
+                {currentUser?.name || "AICTE Administrator"}
               </span>
               <span className="text-[10px] text-[#5B7480] mt-0.5">
-                Head Scrutiny Officer
+                {currentUser?.role === "SENIOR_ADMIN"
+                  ? "Senior Bureau Advisor"
+                  : "Central Admin Officer"}
               </span>
             </div>
             <ChevronDown className="w-4 h-4 text-slate-400 hidden md:block" />
@@ -221,10 +222,10 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
             <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50">
               <div className="px-4 py-2 border-b border-slate-100">
                 <p className="text-xs font-bold text-[#0F2A30]">
-                  Dr. Rajesh Sharma
+                  {currentUser?.name || "AICTE Administrator"}
                 </p>
                 <p className="text-[11px] text-[#5B7480] truncate">
-                  admin@aicte.demo
+                  {currentUser?.email || "admin@finmatrix.gov.in"}
                 </p>
               </div>
 
@@ -243,16 +244,19 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
                   className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-[#006675]"
                 >
                   <ExternalLink className="w-4 h-4 text-slate-400" />
-                  Switch to College View (Demo)
+                  Institution Portal View
                 </Link>
               </div>
 
               <div className="pt-1 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     setUserMenuOpen(false);
-                    window.location.href = "/admin";
+                    try {
+                      await fetch("/api/auth/logout", { method: "POST" });
+                    } catch (e) {}
+                    window.location.href = "/login";
                   }}
                   className="flex items-center gap-2.5 w-full px-4 py-2 text-xs font-semibold text-[#EB5A11] hover:bg-[#FDE3D6]/40"
                 >
